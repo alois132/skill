@@ -99,7 +99,139 @@ skill := core.CreateSkill(
 - [ ] CI/CD 流水线
 - [ ] Docker 部署支持
 
-## 快速开始
+## XML 标记语法
+
+Skill 支持在 Body 中使用 XML 语法，让大模型能自动识别和调用相关资源。
+
+### 支持的 XML 标记
+
+#### 1. 脚本标记 `<script>`
+在 Body 中嵌入脚本引用，自动执行相关脚本。
+
+**语法：**
+```go
+body := `
+第一步：使用<script>init_skill</script>初始化skill
+`
+```
+
+**完整示例：**
+```go
+// 定义脚本
+func initSkill(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+    return map[string]interface{}{
+        "message": "Skill initialized",
+        "files": []string{"main.go", "README.md"},
+    }, nil
+}
+
+// 创建 skill
+skill := core.CreateSkill(
+    "initializer",
+    "Initialize a new skill",
+    core.WithScript(core.CreateScript("init_skill", initSkill)),
+    core.WithAutoParsedBody(`
+第一步：使用<script>init_skill</script>初始化skill
+
+此脚本将：
+- 创建基础目录结构
+- 生成配置文件
+- 准备开发环境
+`),
+)
+
+// 自动执行 Body 中所有脚本
+results, err := core.AutoExecute(ctx, skill, `{"skill_name":"demo"}`)
+// 或执行完整逻辑
+output, err := core.Execute(ctx, skill, `{"skill_name":"demo"}`)
+```
+
+#### 2. 参考文献标记 `<reference>`
+在 Body 中引用参考文献文档：
+
+```go
+body := `
+参考文档：<reference>usage_guide</reference>
+配置文件：<reference>config_schema</reference>
+`
+
+skill := core.CreateSkill(
+    "demo",
+    "Demo skill",
+    core.WithReference("usage_guide", "使用说明内容"),
+    core.WithReference("config_schema", "配置说明内容"),
+    core.WithBody(body),
+)
+
+// 获取参考文献
+content, err := core.ReadReference(skill, "usage_guide")
+```
+
+#### 3. 资产标记 `<asset>`
+在 Body 中引用媒体资产：
+
+```go
+body := `
+使用模板：<asset>project_template.png</asset>
+`
+
+asset := core.CreateAsset("project_template", imageData, resources.PNG)
+skill := core.CreateSkill(
+    "demo",
+    "Demo skill",
+    core.WithAsset(asset),
+    core.WithBody(body),
+)
+
+// 获取资产信息
+names := core.GetAssetNames(skill)
+```
+
+### Builder 辅助函数
+
+使用辅助函数生成 XML 标记字符串：
+
+```go
+body := fmt.Sprintf(`
+使用 %s 初始化
+参考 %s
+模板 %s
+`,
+    core.EmbedScript("init"),
+    core.EmbedReference("guide"),
+    core.EmbedAsset("template.png"),
+)
+```
+
+### 自动执行方法
+
+#### AutoExecute
+按顺序执行 Body 中所有 `<script>` 标记对应的脚本：
+
+```go
+results, err := skill.AutoExecute(ctx, args)
+// results: []ScriptResult{
+//     {ScriptName: "init", Result: "...", Error: nil},
+//     {ScriptName: "config", Result: "...", Error: nil},
+// }
+```
+
+#### Execute
+执行完整的 skill 逻辑，返回格式化结果：
+
+```go
+output, err := skill.Execute(ctx, args)
+// 返回格式：
+// Skill: skill_name
+//
+// [1] Script: init_skill
+// Result: {...}
+//
+// [2] Script: config_skill
+// Result: {...}
+```
+
+### 快速开始
 
 ### 安装
 
@@ -115,7 +247,6 @@ package main
 import (
     "context"
     "github.com/alois132/skill/core"
-    "github.com/alois132/skill/schema"
 )
 
 // 定义一个分析脚本
@@ -131,7 +262,7 @@ func main() {
     analysisSkill := core.CreateSkill(
         "data_analyzer",
         "Analyze data and provide insights",
-        core.WithScript(schema.NewEasyScript("analyze", analyzeData)),
+        core.WithScript(core.CreateScript("analyze", analyzeData)),
         core.WithReference("usage_guide", "Detailed usage instructions..."),
     )
 
@@ -141,31 +272,52 @@ func main() {
 }
 ```
 
-### 进阶示例：使用 Reference 和 Asset
+### 进阶示例：使用 XML 标记
 
 ```go
-// 添加参考文献
-ref := schema.Reference{
-    Name: "best_practices",
-    Body: `# 数据分析最佳实践
-1. 数据清洗
-2. 异常值处理
-3. 可视化展示`,
-}
+package main
 
-// 添加资产
-asset := schema.Asset{
-    Name: "chart_template",
-    Type: "png",
-    Data: chartData, // 图表模板数据
-}
-
-skill := core.CreateSkill(
-    "advanced_analyzer",
-    "Advanced data analysis with templates",
-    core.WithReference("best_practices", ref),
-    core.WithAsset("chart_template", asset),
+import (
+    "context"
+    "fmt"
+    "github.com/alois132/skill/core"
 )
+
+func initProject(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+    return map[string]interface{}{
+        "message": "Project initialized",
+    }, nil
+}
+
+func setupConfig(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+    return map[string]interface{}{
+        "config": "Configuration applied",
+    }, nil
+}
+
+func main() {
+    skill := core.CreateSkill(
+        "project_setup",
+        "Set up a new project",
+        core.WithScript(core.CreateScript("init", initProject)),
+        core.WithScript(core.CreateScript("config", setupConfig)),
+        core.WithAutoParsedBody(`
+第一步：<script>init</script> - 初始化项目
+第二步：<script>config</script> - 配置文件
+参考：<reference>setup_guide</reference>
+`),
+    )
+
+    // 自动执行所有脚本
+    results, err := core.AutoExecute(context.Background(), skill, `{}`)
+    if err != nil {
+        panic(err)
+    }
+
+    for _, r := range results {
+        fmt.Printf("Script: %s\nResult: %s\n\n", r.ScriptName, r.Result)
+    }
+}
 ```
 
 ## 扩展：与 CloudWeGo Eino 集成

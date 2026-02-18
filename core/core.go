@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"github.com/alois132/skill/schema"
 	"github.com/alois132/skill/schema/resources"
 )
@@ -113,6 +114,74 @@ func WithBody(body string) Option {
 	return func(skill *schema.Skill) {
 		skill.Body = body
 	}
+}
+
+// WithAutoParsedBody sets the body and automatically parses XML tags
+func WithAutoParsedBody(body string) Option {
+	return func(skill *schema.Skill) {
+		skill.Body = body
+		skill.ParseXMLTags() // 自动解析
+	}
+}
+
+// WithParsedBody is an alias for WithAutoParsedBody for backward compatibility
+// 这是 WithAutoParsedBody 的别名，用于向后兼容
+func WithParsedBody(body string) Option {
+	return WithAutoParsedBody(body)
+}
+
+// Embeddable XML tag functions for constructing body content
+// 用于构建 Body 内容的可嵌入 XML 标记函数
+
+// EmbedScript generates a <script>name</script> format string
+func EmbedScript(name string) string {
+	return string(fmt.Sprintf("<script>%s</script>", name))
+}
+
+// EmbedReference generates a <reference>name</reference> format string
+func EmbedReference(name string) string {
+	return string(fmt.Sprintf("<reference>%s</reference>", name))
+}
+
+// EmbedAsset generates a <asset>name</asset> format string
+func EmbedAsset(name string) string {
+	return string(fmt.Sprintf("<asset>%s</asset>", name))
+}
+
+// AutoExecute executes all scripts referenced in the skill's body
+// 执行 Body 中所有引用的脚本
+func AutoExecute(ctx context.Context, skill *schema.Skill, args string) ([]schema.ScriptResult, error) {
+	return skill.AutoExecute(ctx, args)
+}
+
+// Execute executes the complete skill logic (main entry point)
+// 执行完整的 skill 逻辑（主要入口点）
+func Execute(ctx context.Context, skill *schema.Skill, args string) (string, error) {
+	return skill.Execute(ctx, args)
+}
+
+// HasXMLTags checks if the skill's body contains XML tags
+// 检查 Skill 的 Body 是否包含 XML 标记
+func HasXMLTags(skill *schema.Skill) bool {
+	return skill.HasXMLTags()
+}
+
+// GetScriptNames gets all script names referenced in the skill's body
+// 获取 Body 中引用的所有脚本名称
+func GetScriptNames(skill *schema.Skill) []string {
+	return skill.GetScriptNames()
+}
+
+// GetReferenceNames gets all reference names in the skill's body
+// 获取 Body 中引用的所有参考文献名称
+func GetReferenceNames(skill *schema.Skill) []string {
+	return skill.GetReferenceNames()
+}
+
+// GetAssetNames gets all asset names in the skill's body
+// 获取 Body 中引用的所有资产名称
+func GetAssetNames(skill *schema.Skill) []string {
+	return skill.GetAssetNames()
 }
 
 // glance skill
