@@ -207,32 +207,10 @@ func RunTimeSkillDemo() {
 		fmt.Printf("  - References found: %v\n", refNames)
 	}
 
-	// 3. 自动执行所有脚本
-	fmt.Println("\n3. Auto Execute Scripts:")
+	// 3. 执行获取时间脚本
+	fmt.Println("\n3. Get Current Time (ISO format):")
 	ctx := context.Background()
 
-	input := TimeInput{
-		Format:   "local",
-		Timezone: "",
-	}
-	inputJSON, _ := json.Marshal(input)
-
-	results, err := core.AutoExecute(ctx, timeSkill, string(inputJSON))
-	if err != nil {
-		fmt.Printf("Error during auto execution: %v\n", err)
-	} else {
-		for i, result := range results {
-			fmt.Printf("\n[%d] Script: %s\n", i+1, result.ScriptName)
-			if result.Error != nil {
-				fmt.Printf("  Error: %v\n", result.Error)
-			} else {
-				fmt.Printf("  Result: %s\n", result.Result)
-			}
-		}
-	}
-
-	// 4. 单独执行获取时间脚本
-	fmt.Println("\n4. Get Current Time (ISO format):")
 	isoInput := TimeInput{Format: "iso"}
 	isoJSON, _ := json.Marshal(isoInput)
 	result, err := core.UseScript(ctx, timeSkill, "get_current_time", string(isoJSON))
@@ -242,8 +220,8 @@ func RunTimeSkillDemo() {
 		fmt.Printf("Result: %s\n", result)
 	}
 
-	// 5. 获取上海时间
-	fmt.Println("\n5. Get Shanghai Time:")
+	// 4. 获取上海时间
+	fmt.Println("\n4. Get Shanghai Time:")
 	shInput := TimeInput{Format: "local", Timezone: "Asia/Shanghai"}
 	shJSON, _ := json.Marshal(shInput)
 	result, err = core.UseScript(ctx, timeSkill, "get_current_time", string(shJSON))
@@ -253,8 +231,8 @@ func RunTimeSkillDemo() {
 		fmt.Printf("Result: %s\n", result)
 	}
 
-	// 6. 获取 Unix 时间戳
-	fmt.Println("\n6. Get Unix Timestamp:")
+	// 5. 获取 Unix 时间戳
+	fmt.Println("\n5. Get Unix Timestamp:")
 	unixInput := TimeInput{Format: "unix"}
 	unixJSON, _ := json.Marshal(unixInput)
 	result, err = core.UseScript(ctx, timeSkill, "get_current_time", string(unixJSON))
@@ -264,8 +242,8 @@ func RunTimeSkillDemo() {
 		fmt.Printf("Result: %s\n", result)
 	}
 
-	// 7. 获取时区信息
-	fmt.Println("\n7. Get Timezone Info:")
+	// 6. 获取时区信息
+	fmt.Println("\n6. Get Timezone Info:")
 	tzResult, err := core.UseScript(ctx, timeSkill, "get_timezone", "{}")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -273,8 +251,8 @@ func RunTimeSkillDemo() {
 		fmt.Printf("Result: %s\n", tzResult)
 	}
 
-	// 8. 读取参考文献
-	fmt.Println("\n8. Read Reference:")
+	// 7. 读取参考文献
+	fmt.Println("\n7. Read Reference:")
 	ref, err := core.ReadReference(timeSkill, "time_format_guide")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

@@ -114,13 +114,13 @@ func main() {
         core.WithReference("usage_guide", "Detailed usage instructions..."),
     )
 
-    // Execute the skill
+    // Use a specific script from the skill
     ctx := context.Background()
-    output, err := skill.Execute(ctx, `{"query": "sample data"}`)
+    result, err := skill.UseScript(ctx, "analyze", `{"query": "sample data"}`)
     if err != nil {
         panic(err)
     }
-    fmt.Println(output)
+    fmt.Println(result)
 }
 ```
 
@@ -162,15 +162,13 @@ func main() {
         `),
     )
 
-    // Auto-execute all scripts in body
-    results, err := skill.AutoExecute(context.Background(), `{"project_name":"myapp"}`)
+    // Use a specific script from the skill
+    ctx := context.Background()
+    result, err := skill.UseScript(ctx, "init", `{"project_name":"myapp"}`)
     if err != nil {
         panic(err)
     }
-
-    for _, r := range results {
-        fmt.Printf("Script: %s\nResult: %v\n\n", r.ScriptName, r.Result)
-    }
+    fmt.Printf("Result: %v\n", result)
 }
 ```
 
@@ -279,12 +277,6 @@ skill := core.CreateSkill(
 ```go
 // Execute a specific script
 result, err := skill.UseScript(ctx, "script_name", `{"key":"value"}`)
-
-// Auto-execute all scripts in body
-results, err := skill.AutoExecute(ctx, `{"key":"value"}`)
-
-// Execute full skill logic
-output, err := skill.Execute(ctx, `{"key":"value"}`)
 ```
 
 ### Reading References
@@ -317,11 +309,10 @@ allTools, err := eino.ToTools(skill1, skill2, skill3...)
 
 ### Generated Tools
 
-Each skill generates three types of tools:
+Each skill generates tools for accessing its resources:
 
 | Tool | Purpose | Input | Output |
 |------|---------|-------|--------|
-| `{skill_name}()` | Execute full skill logic | Skill body description | Execution results |
 | `read_reference(name)` | Access documentation | Reference name | Reference content |
 | `use_script(name, args)` | Execute specific script | Script name + JSON args | Script result |
 

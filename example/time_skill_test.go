@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -298,56 +297,6 @@ func TestCreateTimeSkill(t *testing.T) {
 	}
 
 	t.Logf("Skill created successfully with scripts: %v", scriptNames)
-}
-
-// TestTimeSkill_AutoExecute 测试 Skill 自动执行
-func TestTimeSkill_AutoExecute(t *testing.T) {
-	skill := createTimeSkill()
-	ctx := context.Background()
-
-	input := TimeInput{Format: "local"}
-	inputJSON, _ := json.Marshal(input)
-
-	results, err := skill.AutoExecute(ctx, string(inputJSON))
-	if err != nil {
-		t.Fatalf("AutoExecute() error = %v", err)
-	}
-
-	// 验证执行了 2 个脚本
-	if len(results) != 2 {
-		t.Errorf("Expected 2 results, got %d", len(results))
-	}
-
-	// 验证每个脚本的执行结果
-	for _, result := range results {
-		if result.Error != nil {
-			t.Errorf("Script %s failed: %v", result.ScriptName, result.Error)
-		}
-		if result.Result == "" {
-			t.Errorf("Script %s returned empty result", result.ScriptName)
-		}
-		t.Logf("Script %s: %s", result.ScriptName, result.Result)
-	}
-}
-
-// TestTimeSkill_Execute 测试 Skill 完整执行
-func TestTimeSkill_Execute(t *testing.T) {
-	skill := createTimeSkill()
-	ctx := context.Background()
-
-	input := TimeInput{Format: "iso"}
-	inputJSON, _ := json.Marshal(input)
-
-	result, err := skill.Execute(ctx, string(inputJSON))
-	if err != nil {
-		t.Fatalf("Execute() error = %v", err)
-	}
-
-	if result == "" {
-		t.Error("Expected non-empty result")
-	}
-
-	t.Logf("Execute result: %s", result)
 }
 
 // TestTimeSkill_ReadReference 测试读取参考文献

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/alois132/skill/schema/resources"
 	"github.com/alois132/skill/util"
@@ -91,59 +90,4 @@ func (skill *Skill) GetAssetNames() []string {
 // HasXMLTags 检查 Body 中是否包含 XML 标记
 func (skill *Skill) HasXMLTags() bool {
 	return util.HasXMLTags(skill.Body)
-}
-
-// ScriptResult 脚本执行结果
-type ScriptResult struct {
-	ScriptName string
-	Result     string
-	Error      error
-}
-
-// AutoExecute 自动执行 Body 中所有 \u003cscript\u003e 标记对应的脚本
-// 按出现顺序依次执行，返回所有结果
-// 如果某个脚本执行失败，会继续执行后续脚本，错误信息会记录在结果中
-func (skill *Skill) AutoExecute(ctx context.Context, args string) ([]ScriptResult, error) {
-	scriptNames := skill.GetScriptNames()
-	if scriptNames == nil {
-		return nil, errors.New("no scripts found in body")
-	}
-
-	results := make([]ScriptResult, 0, len(scriptNames))
-
-	for _, scriptName := range scriptNames {
-		result, err := skill.UseScript(ctx, scriptName, args)
-		results = append(results, ScriptResult{
-			ScriptName: scriptName,
-			Result:     result,
-			Error:      err,
-		})
-	}
-
-	return results, nil
-}
-
-// Execute 执行完整的 skill 逻辑
-// 1. 解析 Body 中的 XML 标记
-// 2. 按顺序执行所有 \u003cscript\u003e 标记对应的脚本
-// 3. 返回组合结果字符串
-// 这是 Eino 集成的主要入口点
-func (skill *Skill) Execute(ctx context.Context, args string) (string, error) {
-	results, err := skill.AutoExecute(ctx, args)
-	if err != nil {
-		return "", err
-	}
-
-	// 组合所有结果
-	output := fmt.Sprintf("Skill: %s\n", skill.Metadata.Name)
-	for i, result := range results {
-		output += fmt.Sprintf("\n[%d] Script: %s\n", i+1, result.ScriptName)
-		if result.Error != nil {
-			output += fmt.Sprintf("Error: %v\n", result.Error)
-		} else {
-			output += fmt.Sprintf("Result: %s\n", result.Result)
-		}
-	}
-
-	return output, nil
 }

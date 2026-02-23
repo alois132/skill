@@ -103,8 +103,7 @@ func main() {
 	if err != nil {
 		log.Printf("Error reading reference: %v", err)
 	} else {
-		refObj := resources.Reference{Name: "best_practices", Body: refContent}
-		fmt.Printf("\nBest practices (summary): %s\n", refObj.Summary())
+		fmt.Printf("\nBest practices: %s\n", refContent)
 	}
 
 	fmt.Println("\n=== Demo completed successfully! ===")

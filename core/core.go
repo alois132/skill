@@ -148,18 +148,6 @@ func EmbedAsset(name string) string {
 	return string(fmt.Sprintf("<asset>%s</asset>", name))
 }
 
-// AutoExecute executes all scripts referenced in the skill's body
-// 执行 Body 中所有引用的脚本
-func AutoExecute(ctx context.Context, skill *schema.Skill, args string) ([]schema.ScriptResult, error) {
-	return skill.AutoExecute(ctx, args)
-}
-
-// Execute executes the complete skill logic (main entry point)
-// 执行完整的 skill 逻辑（主要入口点）
-func Execute(ctx context.Context, skill *schema.Skill, args string) (string, error) {
-	return skill.Execute(ctx, args)
-}
-
 // HasXMLTags checks if the skill's body contains XML tags
 // 检查 Skill 的 Body 是否包含 XML 标记
 func HasXMLTags(skill *schema.Skill) bool {

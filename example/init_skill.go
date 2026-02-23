@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/alois132/skill/core"
 )
 
 // 初始化脚本：创建基础 skill 结构
-func initSkill(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func initSkill(_ context.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	skillName, ok := input["skill_name"].(string)
 	if !ok || skillName == "" {
 		return nil, fmt.Errorf("无效的 skill_name: %v", input["skill_name"])
@@ -35,7 +34,7 @@ func initSkill(ctx context.Context, input map[string]interface{}) (map[string]in
 }
 
 // 配置脚本：生成配置文件
-func configSkill(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func configSkill(_ context.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	skillName := input["skill_name"].(string)
 	configType := "default"
 	if ct, ok := input["config_type"].(string); ok {
@@ -112,33 +111,7 @@ func main() {
 		fmt.Println("✗ No XML tags found")
 	}
 
-	// 3. 自动执行所有脚本
-	fmt.Println("\n3. Auto Execute Scripts:")
-	ctx := context.Background()
-	results, err := core.AutoExecute(ctx, initSkill, `{"skill_name":"demo_skill","config_type":"dev"}`)
-	if err != nil {
-		log.Printf("Error during auto execution: %v", err)
-	} else {
-		for i, result := range results {
-			fmt.Printf("\n[%d] Script: %s\n", i+1, result.ScriptName)
-			if result.Error != nil {
-				fmt.Printf("  Error: %v\n", result.Error)
-			} else {
-				fmt.Printf("  Result: %s\n", result.Result)
-			}
-		}
-	}
-
-	// 4. 执行完整的 skill
-	fmt.Println("\n4. Execute Complete Skill:")
-	output, err := core.Execute(ctx, initSkill, `{"skill_name":"demo_skill","config_type":"dev"}`)
-	if err != nil {
-		log.Printf("Error during execution: %v", err)
-	} else {
-		fmt.Println(output)
-	}
-
-	// 5. 演示嵌入函数
+	// 3. 演示嵌入函数
 	fmt.Println("\n5. Builder Helper Functions:")
 	body := fmt.Sprintf(`
 使用 %s 初始化
