@@ -1,9 +1,10 @@
-package main
+package demo
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"testing"
 
 	"github.com/alois132/skill/core"
 	"github.com/alois132/skill/schema/resources"
@@ -24,8 +25,8 @@ func processString(ctx context.Context, input string) (string, error) {
 	return "processed: " + input, nil
 }
 
-func main() {
-	fmt.Println("=== Skill Library Demo ===\n")
+func TestDemo(t *testing.T) {
+	fmt.Println("=== Skill Library Demo ===")
 
 	// 创建data_analysis skill
 	dataAnalysisSkill := core.CreateSkill(

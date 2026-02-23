@@ -1,8 +1,9 @@
-package main
+package init
 
 import (
 	"context"
 	"fmt"
+	"testing"
 
 	"github.com/alois132/skill/core"
 )
@@ -18,7 +19,7 @@ func initSkill(_ context.Context, input map[string]interface{}) (map[string]inte
 	result := map[string]interface{}{
 		"message": fmt.Sprintf("Skill '%s' initialized successfully", skillName),
 		"files_created": []string{
-			fmt.Sprintf("%s/main.go", skillName),
+			fmt.Sprintf("%s/demo_test.go", skillName),
 			fmt.Sprintf("%s/README.md", skillName),
 			fmt.Sprintf("%s/scripts/init.py", skillName),
 			fmt.Sprintf("%s/docs/usage.md", skillName),
@@ -42,15 +43,15 @@ func configSkill(_ context.Context, input map[string]interface{}) (map[string]in
 	}
 
 	result := map[string]interface{}{
-		"message": fmt.Sprintf("Config generated for %s with type: %s", skillName, configType),
+		"message":     fmt.Sprintf("Config generated for %s with type: %s", skillName, configType),
 		"config_file": fmt.Sprintf("%s/config/%s.json", skillName, configType),
 	}
 
 	return result, nil
 }
 
-func main() {
-	fmt.Println("=== Skill Initialization Demo with XML Syntax ===\n")
+func TestInitSkill(t *testing.T) {
+	fmt.Println("=== Skill Initialization Demo with XML Syntax ===")
 
 	// 创建初始化 skill，使用 XML 标记语法
 	initSkill := core.CreateSkill(
@@ -84,7 +85,7 @@ func main() {
 3. 开始开发
 
 ## 目录结构
-- main.go: 主入口
+- demo_test.go: 主入口
 - scripts/: 脚本目录
 - docs/: 文档目录
 `),

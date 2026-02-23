@@ -1,4 +1,4 @@
-package main
+package time
 
 import (
 	"context"
@@ -12,25 +12,25 @@ import (
 
 // TimeInput 时间脚本输入参数
 type TimeInput struct {
-	Format   string `json:"format"`    // 时间格式: iso, local, unix, custom
-	Timezone string `json:"timezone"`  // 时区，如 "UTC", "Asia/Shanghai"
-	Layout   string `json:"layout"`    // 自定义格式布局（当 format=custom 时使用）
+	Format   string `json:"format"`   // 时间格式: iso, local, unix, custom
+	Timezone string `json:"timezone"` // 时区，如 "UTC", "Asia/Shanghai"
+	Layout   string `json:"layout"`   // 自定义格式布局（当 format=custom 时使用）
 }
 
 // TimeOutput 时间脚本输出结果
 type TimeOutput struct {
-	Time     string `json:"time"`      // 格式化后的时间字符串
-	Unix     int64  `json:"unix"`      // Unix 时间戳
-	Timezone string `json:"timezone"`  // 当前时区
+	Time     string `json:"time"`     // 格式化后的时间字符串
+	Unix     int64  `json:"unix"`     // Unix 时间戳
+	Timezone string `json:"timezone"` // 当前时区
 }
 
 // TimezoneOutput 时区信息输出
 type TimezoneOutput struct {
-	Timezone   string   `json:"timezone"`    // 当前时区名称
-	Offset     int      `json:"offset"`      // 偏移量（秒）
-	LocalTime  string   `json:"local_time"`  // 本地时间
-	UTCTime    string   `json:"utc_time"`    // UTC时间
-	Timezones  []string `json:"timezones"`   // 常见时区列表
+	Timezone  string   `json:"timezone"`   // 当前时区名称
+	Offset    int      `json:"offset"`     // 偏移量（秒）
+	LocalTime string   `json:"local_time"` // 本地时间
+	UTCTime   string   `json:"utc_time"`   // UTC时间
+	Timezones []string `json:"timezones"`  // 常见时区列表
 }
 
 // getCurrentTime 获取当前时间
