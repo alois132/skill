@@ -1,278 +1,130 @@
-# skill
+# Skill
 
-## 项目介绍
+<p align="center">
+  <strong>A modular skill framework for AI Agent applications in Go</strong><br>
+  <strong>基于 Go 的 AI Agent 模块化技能框架</strong>
+</p>
 
-`github.com/alois132/skill` 是一个基于 Golang 的 skill 库，专为 AI Agent 应用开发设计。它提供了一套模块化的 skill 系统，让开发者能够轻松构建、管理和部署可在生产环境中使用的 agent skill。
+<p align="center">
+  <a href="https://github.com/alois132/skill/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+  </a>
+  <a href="https://pkg.go.dev/github.com/alois132/skill">
+    <img src="https://pkg.go.dev/badge/github.com/alois132/skill.svg" alt="Go Reference">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/alois132/skill">
+    <img src="https://goreportcard.com/badge/github.com/alois132/skill" alt="Go Report Card">
+  </a>
+  <a href="https://github.com/alois132/skill/actions">
+    <img src="https://img.shields.io/badge/tests-passing-brightgreen.svg" alt="Tests">
+  </a>
+</p>
 
-### 核心目标
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#eino-integration">Eino Integration</a> •
+  <a href="#examples">Examples</a>
+</p>
 
-- **可重用性**：构建可在多个 Agent 应用间共享的 skill 模块
-- **类型安全**：利用 Golang 泛型实现编译时类型检查
-- **生产就绪**：提供可直接应用于生产项目的完整解决方案
-- **框架集成**：深度集成主流 AI Agent 框架（如 CloudWeGo Eino）
+---
 
-### 设计理念
+## Overview
 
-本项目的设计哲学深受 Claude Code 启发，致力于创建一套标准化的 AI Agent 技能开发体系，让开发者能够像构建软件组件一样构建和组合 AI 技能。
+**Skill** is a production-ready Go library for building modular, type-safe, and reusable AI Agent skills. It provides a standardized way to define agent capabilities with scripts, references, and assets, while offering seamless integration with popular AI frameworks like [CloudWeGo Eino](https://github.com/cloudwego/eino).
 
-## 核心架构
+### Key Features
 
-### Skill 结构
+- **Modular Design** - Build reusable skill modules that can be shared across multiple Agent applications
+- **Type Safety** - Leverage Go generics for compile-time type checking and automatic JSON serialization
+- **XML Tag Syntax** - Use intuitive XML tags (`<script>`, `<reference>`, `<asset>`) in skill body for AI to identify resources
+- **Framework Integration** - Deep integration with CloudWeGo Eino, converting skills to tools automatically
+- **Production Ready** - Complete with error handling, logging, and comprehensive testing
 
-Skill 是系统的核心抽象，代表一个 AI Agent 可使用的技能单元。
+### Use Cases
 
-**属性**：
-- `Name`：技能唯一标识
-- `Desc`：技能描述
-- `Body`：技能核心逻辑描述
-- `Scripts`：可执行的脚本列表
-- `References`：参考文献/知识库
-- `Assets`：多媒体资源（图片、PPT、字体等）
+- 🤖 **AI Agent Development** - Build intelligent agents with structured capabilities
+- 🔧 **Tool Orchestration** - Organize and execute multiple tools in a coordinated manner
+- 📚 **Knowledge Management** - Manage references and documentation for AI context
+- 🎨 **Multimedia Skills** - Handle assets like images, templates, and documents
 
-### Resources 体系
+---
 
-Skill 由三类资源构成，形成完整的知识表示体系：
+## Table of Contents
 
-#### 1. Reference（参考文献）
-- 文本形式的背景知识
-- 提供技能执行的上下文和约束
-- 支持 markdown 格式，便于大模型理解
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Core Concepts](#core-concepts)
+  - [Skill Structure](#skill-structure)
+  - [Resources](#resources)
+  - [XML Tag Syntax](#xml-tag-syntax)
+- [API Reference](#api-reference)
+  - [Creating Skills](#creating-skills)
+  - [Executing Scripts](#executing-scripts)
+  - [Reading References](#reading-references)
+- [Eino Integration](#eino-integration)
+- [Examples](#examples)
+- [Development Roadmap](#development-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
 
-#### 2. Script（可执行脚本）
-- 类型安全的可执行函数
-- 支持泛型参数，自动序列化/反序列化
-- 内置 CLI 工具辅助生成脚本
-- **特点**：
-  - 运行时类型检查
-  - JSON 参数的自动转换
-  - 错误处理和日志记录
+---
 
-#### 3. Asset（媒体资产）
-- 二进制资源管理
-- 支持图片、PPT、字体等多种格式
-- 为技能提供视觉辅助材料
-
-### 核心技术
-
-#### 泛型反射系统
-借鉴 CloudWeGo 的优秀实践，提供安全的泛型实例创建能力：
-- `MakeMap[K, V]()` - 创建映射
-- `MakeSlice[T]()` - 创建切片
-- `MakePointer[T]()` - 创建指针
-- `MakeAny(typeString)` - 基于类型字符串创建实例
-
-#### Builder 模式
-流畅的 API 设计：
-```go
-skill := core.CreateSkill(
-    "data_analysis",
-    "Perform data analysis and generate insights",
-    core.WithScript(analyzeScript),
-    core.WithReference(usageRef),
-)
-```
-
-## 开发计划
-
-### Phase 1：核心功能 ✅
-- [x] Skill 核心数据结构定义
-- [x] Resources 抽象接口设计（Script、Reference、Asset）
-- [x] Builder 模式实现
-- [x] 泛型反射工具库
-
-### Phase 2：框架集成（进行中）
-- [ ] CloudWeGo Eino 适配器开发
-- [ ] Tool 转换层：`{skill_name}()`、`read_reference()`、`use_script()`
-- [ ] 中间件和拦截器支持
-- [ ] 示例项目：Eino + Skill 集成
-
-### Phase 3：增强功能
-- [ ] Asset 功能完善（媒体资源管理）
-- [ ] CLI 工具：skill init、skill validate、skill publish
-- [ ] Skill 市场/注册中心原型
-- [ ] 可视化 skill 编辑器（Web UI）
-
-### Phase 4：生产就绪
-- [ ] 完整的测试覆盖率（单元测试 + 集成测试）
-- [ ] Benchmark 性能测试
-- [ ] 文档和示例完善
-- [ ] CI/CD 流水线
-- [ ] Docker 部署支持
-
-## XML 标记语法
-
-Skill 支持在 Body 中使用 XML 语法，让大模型能自动识别和调用相关资源。
-
-### 支持的 XML 标记
-
-#### 1. 脚本标记 `<script>`
-在 Body 中嵌入脚本引用，自动执行相关脚本。
-
-**语法：**
-```go
-body := `
-第一步：使用<script>init_skill</script>初始化skill
-`
-```
-
-**完整示例：**
-```go
-// 定义脚本
-func initSkill(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
-    return map[string]interface{}{
-        "message": "Skill initialized",
-        "files": []string{"main.go", "README.md"},
-    }, nil
-}
-
-// 创建 skill
-skill := core.CreateSkill(
-    "initializer",
-    "Initialize a new skill",
-    core.WithScript(core.CreateScript("init_skill", initSkill)),
-    core.WithAutoParsedBody(`
-第一步：使用<script>init_skill</script>初始化skill
-
-此脚本将：
-- 创建基础目录结构
-- 生成配置文件
-- 准备开发环境
-`),
-)
-
-// 自动执行 Body 中所有脚本
-results, err := core.AutoExecute(ctx, skill, `{"skill_name":"demo"}`)
-// 或执行完整逻辑
-output, err := core.Execute(ctx, skill, `{"skill_name":"demo"}`)
-```
-
-#### 2. 参考文献标记 `<reference>`
-在 Body 中引用参考文献文档：
-
-```go
-body := `
-参考文档：<reference>usage_guide</reference>
-配置文件：<reference>config_schema</reference>
-`
-
-skill := core.CreateSkill(
-    "demo",
-    "Demo skill",
-    core.WithReference("usage_guide", "使用说明内容"),
-    core.WithReference("config_schema", "配置说明内容"),
-    core.WithBody(body),
-)
-
-// 获取参考文献
-content, err := core.ReadReference(skill, "usage_guide")
-```
-
-#### 3. 资产标记 `<asset>`
-在 Body 中引用媒体资产：
-
-```go
-body := `
-使用模板：<asset>project_template.png</asset>
-`
-
-asset := core.CreateAsset("project_template", imageData, resources.PNG)
-skill := core.CreateSkill(
-    "demo",
-    "Demo skill",
-    core.WithAsset(asset),
-    core.WithBody(body),
-)
-
-// 获取资产信息
-names := core.GetAssetNames(skill)
-```
-
-### Builder 辅助函数
-
-使用辅助函数生成 XML 标记字符串：
-
-```go
-body := fmt.Sprintf(`
-使用 %s 初始化
-参考 %s
-模板 %s
-`,
-    core.EmbedScript("init"),
-    core.EmbedReference("guide"),
-    core.EmbedAsset("template.png"),
-)
-```
-
-### 自动执行方法
-
-#### AutoExecute
-按顺序执行 Body 中所有 `<script>` 标记对应的脚本：
-
-```go
-results, err := skill.AutoExecute(ctx, args)
-// results: []ScriptResult{
-//     {ScriptName: "init", Result: "...", Error: nil},
-//     {ScriptName: "config", Result: "...", Error: nil},
-// }
-```
-
-#### Execute
-执行完整的 skill 逻辑，返回格式化结果：
-
-```go
-output, err := skill.Execute(ctx, args)
-// 返回格式：
-// Skill: skill_name
-//
-// [1] Script: init_skill
-// Result: {...}
-//
-// [2] Script: config_skill
-// Result: {...}
-```
-
-### 快速开始
-
-### 安装
+## Installation
 
 ```bash
 go get github.com/alois132/skill
 ```
 
-### 基础示例
+### Requirements
+
+- Go 1.18 or higher (for generics support)
+
+---
+
+## Quick Start
+
+### Basic Example
 
 ```go
 package main
 
 import (
     "context"
+    "fmt"
     "github.com/alois132/skill/core"
 )
 
-// 定义一个分析脚本
+// Define a script function
 func analyzeData(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
-    // 分析逻辑
     return map[string]interface{}{
-        "result": "analysis completed",
+        "result": "Analysis completed successfully",
+        "data":   input,
     }, nil
 }
 
 func main() {
-    // 创建 skill
-    analysisSkill := core.CreateSkill(
+    // Create a skill
+    skill := core.CreateSkill(
         "data_analyzer",
         "Analyze data and provide insights",
         core.WithScript(core.CreateScript("analyze", analyzeData)),
         core.WithReference("usage_guide", "Detailed usage instructions..."),
     )
 
-    // 查看 skill 信息
-    analysisSkill.Glance()
-    analysisSkill.Inspect()
+    // Execute the skill
+    ctx := context.Background()
+    output, err := skill.Execute(ctx, `{"query": "sample data"}`)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(output)
 }
 ```
 
-### 进阶示例：使用 XML 标记
+### XML Tag Example
 
 ```go
 package main
@@ -286,6 +138,7 @@ import (
 func initProject(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
     return map[string]interface{}{
         "message": "Project initialized",
+        "files":   []string{"main.go", "README.md"},
     }, nil
 }
 
@@ -298,83 +151,350 @@ func setupConfig(ctx context.Context, input map[string]interface{}) (map[string]
 func main() {
     skill := core.CreateSkill(
         "project_setup",
-        "Set up a new project",
+        "Set up a new Go project",
         core.WithScript(core.CreateScript("init", initProject)),
         core.WithScript(core.CreateScript("config", setupConfig)),
         core.WithAutoParsedBody(`
-第一步：<script>init</script> - 初始化项目
-第二步：<script>config</script> - 配置文件
-参考：<reference>setup_guide</reference>
-`),
+第一步：<script>init</script> - 初始化项目结构
+第二步：<script>config</script> - 配置项目参数
+
+参考文档：<reference>setup_guide</reference>
+        `),
     )
 
-    // 自动执行所有脚本
-    results, err := core.AutoExecute(context.Background(), skill, `{}`)
+    // Auto-execute all scripts in body
+    results, err := skill.AutoExecute(context.Background(), `{"project_name":"myapp"}`)
     if err != nil {
         panic(err)
     }
 
     for _, r := range results {
-        fmt.Printf("Script: %s\nResult: %s\n\n", r.ScriptName, r.Result)
+        fmt.Printf("Script: %s\nResult: %v\n\n", r.ScriptName, r.Result)
     }
 }
 ```
 
-## 扩展：与 CloudWeGo Eino 集成
+---
 
-skill 项目专门设计与 CloudWeGo Eino 框架无缝集成，将 Skill 封装为 Eino Tool。
+## Core Concepts
 
-### 三类 Tool 映射
+### Skill Structure
 
-1. **`{skill_name}()`**
-   - **用途**：执行完整的 skill 逻辑
-   - **示例**：创建 `skill_create` skill 后，自动生成 `skill_create()` tool
-   - **输入**：skill 的 body 作为描述
-   - **输出**：skill 执行结果
+A `Skill` is the core abstraction representing a capability that an AI Agent can use:
 
-2. **`read_reference(reference_name string)`**
-   - **用途**：访问 skill 的参考文献
-   - **示例**：`read_reference("skill_create/workflows")`
-   - **输入**：reference 名称（格式：`skill_name/reference_name`）
-   - **输出**：reference 的 body 内容
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Unique identifier for the skill |
+| `Desc` | `string` | Human-readable description |
+| `Body` | `string` | Core logic description with XML tags |
+| `Scripts` | `[]Script` | Executable functions |
+| `References` | `[]Reference` | Documentation and knowledge base |
+| `Assets` | `[]Asset` | Binary resources (images, templates, etc.) |
 
-3. **`use_script(script_name string, args string)`**
-   - **用途**：执行 skill 中的特定脚本
-   - **示例**：`use_script("skill_create/init_skill", `{"skill_name":"skill_create"}`)
-   - **输入**：脚本名称和 JSON 格式的参数
-   - **输出**：脚本执行结果的 JSON 字符串
+### Resources
 
-### 集成优势
+Skills are composed of three types of resources:
 
-- ✅ 统一的 Tool 接口标准
-- ✅ 类型安全的参数处理
-- ✅ 自动化的 skill 发现机制
-- ✅ 与 Eino 生态无缝协作
+#### 1. Script - Executable Functions
 
-## 许可证
+Type-safe executable functions with automatic JSON serialization:
 
-MIT License
+```go
+// Define with generics for type safety
+script := resources.NewEasyScript(
+    "calculate",
+    func(ctx context.Context, req CalculateRequest) (CalculateResponse, error) {
+        return CalculateResponse{Result: req.A + req.B}, nil
+    },
+)
+```
 
-## 贡献
+Features:
+- Runtime type checking
+- Automatic JSON parameter conversion
+- Generic type safety
 
-欢迎提交 Issue 和 Pull Request！
+#### 2. Reference - Documentation
 
-### 开发环境准备
+Text-based knowledge resources:
+
+```go
+ref := resources.Reference{
+    Name: "api_guide",
+    Body: "# API Documentation\n...",
+}
+```
+
+#### 3. Asset - Binary Resources
+
+Binary media resources:
+
+```go
+asset := resources.Asset{
+    Name: "template",
+    Type: resources.PNG,
+    Body: imageData,
+}
+```
+
+### XML Tag Syntax
+
+Use XML tags in the skill body to help AI identify and use resources:
+
+| Tag | Purpose | Example |
+|-----|---------|---------|
+| `<script>name</script>` | Reference a script | `<script>init_project</script>` |
+| `<reference>name</reference>` | Reference documentation | `<reference>api_guide</reference>` |
+| `<asset>name</asset>` | Reference a binary asset | `<asset>template.png</asset>` |
+
+---
+
+## API Reference
+
+### Creating Skills
+
+```go
+// Basic skill creation
+skill := core.CreateSkill(
+    "skill_name",
+    "Skill description",
+    core.WithScript(script),
+    core.WithReference("guide", "Documentation content"),
+    core.WithBody("Skill body with <script>example</script>"),
+)
+
+// With auto-parsed body
+skill := core.CreateSkill(
+    "skill_name",
+    "Skill description",
+    core.WithAutoParsedBody(`
+步骤：<script>step1</script>
+参考：<reference>guide</reference>
+    `),
+)
+```
+
+### Executing Scripts
+
+```go
+// Execute a specific script
+result, err := skill.UseScript(ctx, "script_name", `{"key":"value"}`)
+
+// Auto-execute all scripts in body
+results, err := skill.AutoExecute(ctx, `{"key":"value"}`)
+
+// Execute full skill logic
+output, err := skill.Execute(ctx, `{"key":"value"}`)
+```
+
+### Reading References
+
+```go
+// Read a reference
+content, err := skill.ReadReference("reference_name")
+
+// Get all reference names
+names := skill.GetReferenceNames()
+```
+
+---
+
+## Eino Integration
+
+Skill provides seamless integration with [CloudWeGo Eino](https://github.com/cloudwego/eino), automatically converting skills to Eino Tools.
+
+### Converting Skills to Tools
+
+```go
+import "github.com/alois132/skill/adapter/eino"
+
+// Convert a skill to Eino tools
+tools, err := eino.ToTools(skill)
+
+// Convert multiple skills
+allTools, err := eino.ToTools(skill1, skill2, skill3...)
+```
+
+### Generated Tools
+
+Each skill generates three types of tools:
+
+| Tool | Purpose | Input | Output |
+|------|---------|-------|--------|
+| `{skill_name}()` | Execute full skill logic | Skill body description | Execution results |
+| `read_reference(name)` | Access documentation | Reference name | Reference content |
+| `use_script(name, args)` | Execute specific script | Script name + JSON args | Script result |
+
+### Example: Eino Agent with Skills
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/alois132/skill/adapter/eino"
+    "github.com/alois132/skill/core"
+    "github.com/cloudwego/eino/components/tool"
+)
+
+func main() {
+    // Create skills
+    timeSkill := createTimeSkill()
+    calcSkill := createCalcSkill()
+
+    // Convert to Eino tools
+    tools, err := eino.ToTools(timeSkill, calcSkill)
+    if err != nil {
+        panic(err)
+    }
+
+    // Use with Eino agent
+    agent := createAgent(tools)
+    response, err := agent.Generate(ctx, "What time is it?")
+}
+```
+
+---
+
+## Examples
+
+### Time Skill Example
+
+A complete example demonstrating time formatting capabilities:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/alois132/skill/core"
+    "github.com/alois132/skill/schema/resources"
+)
+
+func main() {
+    // Create time formatting skill
+    timeSkill := core.CreateSkill(
+        "time_formatter",
+        "Format and manipulate time",
+        core.WithScript(resources.NewEasyScript(
+            "format_time",
+            func(ctx context.Context, req struct {
+                Format string `json:"format"`
+            }) (struct {
+                Result string `json:"result"`
+            }, error) {
+                return struct {
+                    Result string `json:"result"`
+                }{
+                    Result: time.Now().Format(req.Format),
+                }, nil
+            },
+        )),
+        core.WithReference("time_formats", `
+常用时间格式：
+- "2006-01-02" - 日期
+- "15:04:05" - 时间
+- "2006-01-02 15:04:05" - 完整时间
+        `),
+        core.WithAutoParsedBody(`
+格式化当前时间：<script>format_time</script>
+参考时间格式文档：<reference>time_formats</reference>
+        `),
+    )
+
+    // Execute
+    result, err := timeSkill.UseScript(context.Background(), "format_time", `{"format":"2006-01-02 15:04:05"}`)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("Result: %v\n", result)
+}
+```
+
+### More Examples
+
+See the [`example/`](./example) directory for more complete examples:
+
+- [`main.go`](./example/main.go) - Basic usage demonstration
+- [`time_skill.go`](./example/time_skill.go) - Time formatting skill with tests
+- [`init_skill.go`](./example/init_skill.go) - Project initialization with XML tags
+
+---
+
+## Development Roadmap
+
+### Phase 1: Core Foundation ✅
+- [x] Skill core data structures
+- [x] Resource abstractions (Script, Reference, Asset)
+- [x] Builder pattern API
+- [x] Generic reflection utilities
+
+### Phase 2: Framework Integration ✅
+- [x] CloudWeGo Eino adapter
+- [x] Tool conversion layer
+- [x] Automatic skill discovery
+
+### Phase 3: Enhanced Features 🚧
+- [ ] Asset management system
+- [ ] CLI tools (skill init, validate, publish)
+- [ ] Skill registry/marketplace
+- [ ] Web-based skill editor
+
+### Phase 4: Production Readiness
+- [ ] Comprehensive test coverage
+- [ ] Performance benchmarks
+- [ ] CI/CD pipeline
+- [ ] Docker deployment support
+
+---
+
+## Contributing
+
+We welcome contributions! Please see our [contributing guidelines](./CONTRIBUTING.md) for details.
+
+### Development Setup
 
 ```bash
-# 克隆项目
+# Clone the repository
 git clone https://github.com/alois132/skill.git
 cd skill
 
-# 安装依赖
+# Install dependencies
 go mod download
 
-# 运行测试
+# Run tests
 go test ./...
+
+# Run with coverage
+go test -cover ./...
 ```
 
-### 代码规范
+### Code Standards
 
-- 遵循 Go 官方编码规范
-- 中英双语注释（代码用英文，说明用中文）
-- 提交前确保 `go vet` 和 `go fmt` 通过
+- Follow [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- Use bilingual comments (English for code, Chinese for explanations)
+- Ensure `go vet` and `go fmt` pass before committing
+
+---
+
+## Related Projects
+
+- [CloudWeGo Eino](https://github.com/cloudwego/eino) - The AI Agent framework that Skill integrates with
+- [LangChain Go](https://github.com/tmc/langchaingo) - Another popular Go AI framework
+- [Claude Code](https://github.com/anthropics/claude-code) - Inspiration for this project's design philosophy
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ for the AI Agent community</strong><br>
+  <sub>Designed for production, inspired by Claude Code</sub>
+</p>
