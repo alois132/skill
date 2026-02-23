@@ -75,7 +75,7 @@
 ## Installation
 
 ```bash
-go get github.com/alois132/skill
+go get github.com/alois132/skill@latest
 ```
 
 ### Requirements
