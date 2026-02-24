@@ -16,6 +16,10 @@ type Skill struct {
 	References []*resources.Reference `json:"references"`
 	Assets     []*resources.Asset     `json:"assets"`
 
+	// Provider 资源提供者接口，用于动态获取资源
+	// 如果设置了 Provider，会优先使用 Provider 获取资源
+	Provider resources.ResourceProvider `json:"-"`
+
 	// 内部缓存字段（不参与序列化）
 	parsedTags []util.XMLTag `json:"-"`
 	parsed     bool          `json:"-"`
@@ -36,7 +40,16 @@ func (skill *Skill) Inspect() (body string) {
 }
 
 func (skill *Skill) UseScript(ctx context.Context, name string, args string) (result string, err error) {
-	// 遍历scripts查找匹配名称的脚本
+	// 1. 首先尝试从 Provider 获取脚本（如果设置了 Provider）
+	if skill.Provider != nil {
+		script, err := skill.Provider.GetScript(ctx, name)
+		if err == nil {
+			return script.Run(ctx, args)
+		}
+		// 如果 Provider 返回错误，继续尝试内联脚本
+	}
+
+	// 2. 遍历内联 scripts 查找匹配名称的脚本
 	for _, script := range skill.Scripts {
 		if script.GetName() == name {
 			return script.Run(ctx, args)
@@ -46,7 +59,16 @@ func (skill *Skill) UseScript(ctx context.Context, name string, args string) (re
 }
 
 func (skill *Skill) ReadReference(name string) (string, error) {
-	// 遍历references查找匹配名称的参考文献
+	// 1. 首先尝试从 Provider 获取参考文档（如果设置了 Provider）
+	if skill.Provider != nil {
+		body, err := skill.Provider.GetReference(context.Background(), name)
+		if err == nil {
+			return body, nil
+		}
+		// 如果 Provider 返回错误，继续尝试内联参考文档
+	}
+
+	// 2. 遍历内联 references 查找匹配名称的参考文献
 	for _, ref := range skill.References {
 		if ref.Name == name {
 			return ref.Body, nil

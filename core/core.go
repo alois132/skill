@@ -199,3 +199,36 @@ func UseScript(ctx context.Context, skill *schema.Skill, name string, args strin
 func ReadReference(skill *schema.Skill, name string) (string, error) {
 	return skill.ReadReference(name)
 }
+
+// WithResourceProvider sets the ResourceProvider for a skill
+// This allows the skill to dynamically load resources from external sources
+func WithResourceProvider(provider resources.ResourceProvider) Option {
+	return func(skill *schema.Skill) {
+		skill.Provider = provider
+	}
+}
+
+// CreateRemoteScript creates a new RemoteScript with the given name and client
+func CreateRemoteScript(name string, client resources.RemoteScriptClient) resources.Script {
+	return resources.NewRemoteScript(name, client)
+}
+
+// CreateInlineProvider creates a new InlineProvider for in-memory resources
+func CreateInlineProvider() *resources.InlineProvider {
+	return resources.NewInlineProvider()
+}
+
+// CreateCompositeProvider creates a new CompositeProvider that combines multiple providers
+func CreateCompositeProvider(providers ...resources.ResourceProvider) *resources.CompositeProvider {
+	return resources.NewCompositeProvider(providers...)
+}
+
+// CreateCachingProvider creates a new CachingProvider that caches resources
+func CreateCachingProvider(provider resources.ResourceProvider) *resources.CachingProvider {
+	return resources.NewCachingProvider(provider)
+}
+
+// CreateLazyLoadingProvider creates a new LazyLoadingProvider that loads resources on demand
+func CreateLazyLoadingProvider(loader func(ctx context.Context) (resources.ResourceProvider, error)) *resources.LazyLoadingProvider {
+	return resources.NewLazyLoadingProvider(loader)
+}

@@ -1,7 +1,10 @@
 package schema
 
 import (
+	"context"
 	"testing"
+
+	"github.com/alois132/skill/schema/resources"
 )
 
 func TestSkill_ParseXMLTags(t *testing.T) {
@@ -161,5 +164,174 @@ func TestSkill_HasXMLTags(t *testing.T) {
 				t.Errorf("HasXMLTags() = %v, want %v", result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestSkill_WithProvider(t *testing.T) {
+	ctx := context.Background()
+
+	// 创建 Provider
+	provider := resources.NewInlineProvider()
+	provider.AddScript(resources.NewEasyScript("provider_script", func(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+		return map[string]interface{}{"source": "provider"}, nil
+	}))
+	provider.AddReference(&resources.Reference{Name: "provider_ref", Body: "Provider reference content"})
+
+	// 创建带有 Provider 的 Skill
+	skill := &Skill{
+		Metadata: &SkillMetadata{
+			Name:        "test_skill",
+			Description: "Test skill with provider",
+		},
+		Body: "Test body with <script>provider_script</script> and <reference>provider_ref</reference>",
+		Scripts: []resources.Script{
+			resources.NewEasyScript("inline_script", func(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+				return map[string]interface{}{"source": "inline"}, nil
+			}),
+		},
+		References: []*resources.Reference{
+			{Name: "inline_ref", Body: "Inline reference content"},
+		},
+		Provider: provider,
+	}
+
+	// 测试从 Provider 获取脚本
+	result, err := skill.UseScript(ctx, "provider_script", `{}`)
+	if err != nil {
+		t.Fatalf("Failed to use provider script: %v", err)
+	}
+	if result != `{"source":"provider"}` {
+		t.Errorf("Expected '{\"source\":\"provider\"}', got '%s'", result)
+	}
+
+	// 测试从内联获取脚本（Provider 中不存在）
+	result, err = skill.UseScript(ctx, "inline_script", `{}`)
+	if err != nil {
+		t.Fatalf("Failed to use inline script: %v", err)
+	}
+	if result != `{"source":"inline"}` {
+		t.Errorf("Expected '{\"source\":\"inline\"}', got '%s'", result)
+	}
+
+	// 测试从 Provider 获取参考文档
+	ref, err := skill.ReadReference("provider_ref")
+	if err != nil {
+		t.Fatalf("Failed to read provider reference: %v", err)
+	}
+	if ref != "Provider reference content" {
+		t.Errorf("Expected 'Provider reference content', got '%s'", ref)
+	}
+
+	// 测试从内联获取参考文档（Provider 中不存在）
+	ref, err = skill.ReadReference("inline_ref")
+	if err != nil {
+		t.Fatalf("Failed to read inline reference: %v", err)
+	}
+	if ref != "Inline reference content" {
+		t.Errorf("Expected 'Inline reference content', got '%s'", ref)
+	}
+}
+
+func TestSkill_ProviderPriority(t *testing.T) {
+	ctx := context.Background()
+
+	// 创建 Provider，包含同名脚本
+	provider := resources.NewInlineProvider()
+	provider.AddScript(resources.NewEasyScript("shared_script", func(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+		return map[string]interface{}{"source": "provider"}, nil
+	}))
+
+	// 创建带有 Provider 和内联同名脚本的 Skill
+	skill := &Skill{
+		Metadata: &SkillMetadata{Name: "priority_test"},
+		Body:     "Test body",
+		Scripts: []resources.Script{
+			resources.NewEasyScript("shared_script", func(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+				return map[string]interface{}{"source": "inline"}, nil
+			}),
+		},
+		Provider: provider,
+	}
+
+	// Provider 应该优先
+	result, err := skill.UseScript(ctx, "shared_script", `{}`)
+	if err != nil {
+		t.Fatalf("Failed to use script: %v", err)
+	}
+	if result != `{"source":"provider"}` {
+		t.Errorf("Expected '{\"source\":\"provider\"}', got '%s'", result)
+	}
+}
+
+func TestSkill_NoProvider(t *testing.T) {
+	ctx := context.Background()
+
+	// 创建没有 Provider 的 Skill
+	skill := &Skill{
+		Metadata: &SkillMetadata{Name: "no_provider"},
+		Body:     "Test body",
+		Scripts: []resources.Script{
+			resources.NewEasyScript("test_script", func(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+				return map[string]interface{}{"result": "ok"}, nil
+			}),
+		},
+		References: []*resources.Reference{
+			{Name: "test_ref", Body: "Reference content"},
+		},
+	}
+
+	// 测试内联脚本
+	result, err := skill.UseScript(ctx, "test_script", `{}`)
+	if err != nil {
+		t.Fatalf("Failed to use script: %v", err)
+	}
+	if result != `{"result":"ok"}` {
+		t.Errorf("Expected '{\"result\":\"ok\"}', got '%s'", result)
+	}
+
+	// 测试内联参考文档
+	ref, err := skill.ReadReference("test_ref")
+	if err != nil {
+		t.Fatalf("Failed to read reference: %v", err)
+	}
+	if ref != "Reference content" {
+		t.Errorf("Expected 'Reference content', got '%s'", ref)
+	}
+
+	// 测试不存在的脚本
+	_, err = skill.UseScript(ctx, "non_existent", `{}`)
+	if err == nil {
+		t.Error("Expected error for non-existent script")
+	}
+
+	// 测试不存在的参考文档
+	_, err = skill.ReadReference("non_existent")
+	if err == nil {
+		t.Error("Expected error for non-existent reference")
+	}
+}
+
+func TestSkill_GlanceAndInspect(t *testing.T) {
+	skill := &Skill{
+		Metadata: &SkillMetadata{
+			Name:        "test_skill",
+			Description: "Test description",
+		},
+		Body: "Test body content",
+	}
+
+	// 测试 Glance
+	glance := skill.Glance()
+	if glance == "" {
+		t.Error("Expected non-empty glance")
+	}
+	if glance != `{"name":"test_skill","description":"Test description"}` {
+		t.Errorf("Unexpected glance: %s", glance)
+	}
+
+	// 测试 Inspect
+	inspect := skill.Inspect()
+	if inspect != "Test body content" {
+		t.Errorf("Expected 'Test body content', got '%s'", inspect)
 	}
 }
